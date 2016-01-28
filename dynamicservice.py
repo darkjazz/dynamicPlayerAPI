@@ -34,6 +34,26 @@ class MoodService:
     def getConf(self, section, key):
         return self.config[section][key]
 
+    # COMPOSITE ACCESS
+
+    def getFeaturesByCoordinates(self, valence, arousal, limit, feature):
+        tracks = []
+        re = self.findNearestTracks(valence, arousal, limit)
+        for result in json.loads(re):
+            track = { 
+                "valence": float(result["valence"]["value"]), 
+                "arousal": float(result["arousal"]["value"]),
+                "filename": result["path"]["value"]
+            }
+            print track["filename"]
+            mdata = self.getTrackGuidByFilename(track["filename"])
+            track["_id"] = json.loads(mdata)
+            features = self.getFeatureByTrackGuid(track["_id"], feature)
+            track[feature] = features
+            tracks.append(track)
+        return json.dumps(tracks)
+    getFeaturesByCoordinates.exposed = True
+
     # SPARQL ENDPOINT ACCESS 
 
     def coordinateLimits(self, configNumber):
@@ -56,6 +76,11 @@ class MoodService:
         return self.executeQuery("metadata_by_filename", params)
     getLocalMetadata.exposed = True
 
+    def getTrackUriByFilename(self, fielname):
+        params = { "@filename", filename }
+        return self.executeQuery("trackuri_by_filename", params)
+    getTrackUriByFilename.exposed = True
+
     def executeQuery(self, queryname, params):
         jsonstr = self.endpoint.executeQuery(queryname, params, self.getConf('fuseki','dataset'))
         data = json.loads(jsonstr)
@@ -74,6 +99,10 @@ class MoodService:
     def getTrackByGuid(self, trackid):
         return self.getSingleDocument('getTrackByGuid', trackid)
     getTrackByGuid.exposed = True
+
+    def getTrackGuidByFilename(self, filename):
+        return self.getSingleDocument('getTrackGuidByFilename', filename)
+    getTrackGuidByFilename.exposed = True
     
     def getFeatureByTrackGuid(self, trackid, feature):
         return self.getSingleDocument('getFeatureByTrackGuid', [trackid, feature])
@@ -87,7 +116,7 @@ class MoodService:
         doc = None
         for row in self.couchdb.view("views/" + viewname, key=key):
             doc = row.value
-        return json.dumps(row.value)
+        return json.dumps(doc)
 
     def saveDocument(self, json):
         return self.couchdb.save(json)
