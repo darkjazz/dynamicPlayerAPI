@@ -43,7 +43,7 @@ class MoodService:
             mdata = self.getTrackGuidByFilename(track["filename"])
             track["_id"] = json.loads(mdata)
             features = self.getFeatureByTrackGuid(track["_id"], feature)
-            track[feature] = features
+            track[feature] = json.loads(features)
             tracks.append(track)
         return json.dumps(tracks)
     getFeaturesByFilenames.exposed = True
