@@ -34,7 +34,19 @@ class MoodService:
     def getConf(self, section, key):
         return self.config[section][key]
 
-    # COMPOSITE ACCESS
+    # MOODPLAY
+
+    def getFeaturesByFilenames(self, filenames, feature):
+        tracks = []
+        for fname in eval(filenames):
+            track = { "filename": fname }
+            mdata = self.getTrackGuidByFilename(track["filename"])
+            track["_id"] = json.loads(mdata)
+            features = self.getFeatureByTrackGuid(track["_id"], feature)
+            track[feature] = features
+            tracks.append(track)
+        return json.dumps(tracks)
+    getFeaturesByFilenames.exposed = True
 
     def getFeaturesByCoordinates(self, valence, arousal, limit, feature):
         tracks = []
