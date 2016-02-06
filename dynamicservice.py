@@ -9,7 +9,7 @@ class MoodService:
 
     def __init__(self):
         self.unpackConfig()
-        self.endpoint = SparqlEndpoint(self.getConf('fuseki','uri'), self.getConf('fuseki','port'), self.getConf('fuseki','dataset'))
+        self.endpointConnection = SparqlHttpConnection(self.getConf('fuseki','uri'), self.getConf('fuseki','port'), self.getConf('fuseki','querydir'))
         self.couchServer = couchdb.Server(self.getConf('couchdb','uri'))
         self.couchdb = self.couchServer[self.getConf('couchdb','database')]
 
@@ -20,7 +20,8 @@ class MoodService:
             'fuseki': { 
                 'uri': config.get('fuseki','uri').replace("\"", ""), 
                 'port': int(config.get('fuseki','port')),  
-                'dataset': config.get('fuseki','dataset').replace("\"", "")
+                'dataset': config.get('fuseki','dataset').replace("\"", ""),
+                'querydir': config.get('fuseki','querydir').replace("\"", "")
             },
             'couchdb': {
                 'uri': config.get('couchdb','uri').replace("\"", ""),
@@ -94,7 +95,7 @@ class MoodService:
     getTrackUriByFilename.exposed = True
 
     def executeQuery(self, queryname, params):
-        jsonstr = self.endpoint.executeQuery(queryname, params, self.getConf('fuseki','dataset'))
+        jsonstr = self.endpointConnection.executeQuery(queryname, params, self.getConf('fuseki','dataset'))
         data = json.loads(jsonstr)
         return json.dumps(data['results']['bindings'])
 
