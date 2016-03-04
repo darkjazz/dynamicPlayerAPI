@@ -89,10 +89,15 @@ class MoodService:
         return self.executeQuery("metadata_by_filename", params)
     getLocalMetadata.exposed = True
 
-    def getTrackUriByFilename(self, fielname):
-        params = { "@filename", filename }
+    def getTrackUriByFilename(self, filename):
+        params = { "@filename": filename }
         return self.executeQuery("trackuri_by_filename", params)
     getTrackUriByFilename.exposed = True
+
+    def getCoordinatesForConfig(self, configNumber):
+        params = { "@config": configNumber }
+        return self.executeQuery("coords_for_config", params)
+    getCoordinatesForConfig.exposed = True
 
     def executeQuery(self, queryname, params):
         jsonstr = self.endpointConnection.executeQuery(queryname, params, self.getConf('fuseki','dataset'))
@@ -138,7 +143,7 @@ class MoodService:
 
     def getMusicbrainzMetadata(self, mbid):
         uri = self.getConf('musicbrainz','recordingService')
-        re, co = httplib2.Http().request(uri + mbid + "?inc=artist-credits&fmt=json")
+        re, co = httplib2.Http().request(uri + mbid + "?inc=artist-credits+releases&fmt=json")
         if re.status == 200:
             return co
         else:
