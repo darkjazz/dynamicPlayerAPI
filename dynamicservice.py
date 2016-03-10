@@ -58,7 +58,7 @@ class MoodService:
                 "arousal": float(result["arousal"]["value"]),
                 "filename": result["path"]["value"]
             }
-            print track["filename"]
+            print(track["filename"])
             mdata = self.getTrackGuidByFilename(track["filename"])
             track["_id"] = json.loads(mdata)
             features = self.getFeatureByTrackGuid(track["_id"], feature)
